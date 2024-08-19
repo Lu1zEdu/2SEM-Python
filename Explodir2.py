@@ -1,6 +1,6 @@
 contador = 0
 class No :
-    lista = [x for x in range(10000)]
+    lista = [x for x in range(100000)]
     proximo = None
 
 if __name__  == "__main__" :
