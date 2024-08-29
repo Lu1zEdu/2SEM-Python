@@ -1,3 +1,4 @@
+import datetime
 import sqlite3
 import re
 import os
@@ -13,6 +14,18 @@ def Pausar():
 
 def Validar_Telefone(telefone):
     return re.match(r"^\d{10,11}$", telefone)
+
+
+def Validar_Email(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email)
+
+
+def Validar_Data_Nascimento(data_nascimento):
+    try:
+        datetime.datetime.strptime(data_nascimento, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
 
 def Confirmar_Acao(mensagem):
@@ -33,7 +46,8 @@ def Conectar_Banco():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nome TEXT NOT NULL,
                 telefone TEXT NOT NULL,
-                email TEXT NOT NULL
+                email TEXT NOT NULL,
+                data_nascimento DATE
             )
             """
         )
@@ -93,9 +107,17 @@ def Cadastrar_Contato():
 
     while True:
         email = input("Qual o email do contato: \n").strip()
-        if re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        if Validar_Email(email):
             break
         print("Email inválido. Tente novamente.")
+
+    while True:
+        data_nascimento = input(
+            "Qual a data de nascimento do contato (aaaa-mm-dd): \n"
+        ).strip()
+        if Validar_Data_Nascimento(data_nascimento):
+            break
+        print("Data de nascimento inválida. Use o formato aaaa-mm-dd.")
 
     cursor.execute("SELECT * FROM contatos WHERE nome = ?", (nome,))
     if cursor.fetchone():
@@ -104,11 +126,11 @@ def Cadastrar_Contato():
         return Cadastrar_Contato()
 
     cursor.execute(
-        "INSERT INTO contatos (nome, telefone, email) VALUES (?, ?, ?)",
-        (nome, numero, email),
+        "INSERT INTO contatos (nome, telefone, email, data_nascimento) VALUES (?, ?, ?, ?)",
+        (nome, numero, email, data_nascimento),
     )
     conexao.commit()
-    print(f"Contato salvo: {nome} - {numero}, {email}")
+    print(f"Contato salvo: {nome} - {numero}, {email}, Nascimento: {data_nascimento}")
 
     if Confirmar_Acao("Deseja cadastrar um novo contato?"):
         Cadastrar_Contato()
@@ -125,7 +147,7 @@ def Listar_Contatos():
         print("\nLista de Contatos:")
         for contato in contatos:
             print(
-                f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]}"
+                f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
             )
     else:
         print("Nenhum contato cadastrado.")
@@ -142,7 +164,7 @@ def Buscar_Contato():
 
     if contato:
         print(
-            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]}"
+            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
         )
     else:
         print("Contato não encontrado.")
@@ -159,7 +181,7 @@ def Apagar_Contato():
 
     if contato:
         print(
-            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]}"
+            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
         )
         if Confirmar_Acao(f"Tem certeza que deseja apagar o contato {nome}?"):
             cursor.execute("DELETE FROM contatos WHERE nome = ?", (nome,))
@@ -182,7 +204,7 @@ def Editar_Contato():
     if contato:
         Limpar_Tela()
         print(
-            f"Contato encontrado: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]}"
+            f"Contato encontrado: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
         )
 
         novo_nome = input("Novo nome (pressione Enter para manter o atual): ").strip()
@@ -190,6 +212,9 @@ def Editar_Contato():
             "Novo telefone (pressione Enter para manter o atual): "
         ).strip()
         novo_email = input("Novo email (pressione Enter para manter o atual): ").strip()
+        nova_data_nascimento = input(
+            "Nova data de nascimento (aaaa-mm-dd) (pressione Enter para manter a atual): "
+        ).strip()
 
         if novo_nome:
             nome = novo_nome
@@ -197,17 +222,23 @@ def Editar_Contato():
             telefone = novo_telefone
         else:
             telefone = contato[2]
-        if novo_email and re.match(r"[^@]+@[^@]+\.[^@]+", novo_email):
+        if novo_email and Validar_Email(novo_email):
             email = novo_email
         else:
             email = contato[3]
+        if nova_data_nascimento and Validar_Data_Nascimento(nova_data_nascimento):
+            data_nascimento = nova_data_nascimento
+        else:
+            data_nascimento = contato[4]
 
         cursor.execute(
-            "UPDATE contatos SET nome = ?, telefone = ?, email = ? WHERE id = ?",
-            (nome, telefone, email, contato[0]),
+            "UPDATE contatos SET nome = ?, telefone = ?, email = ?, data_nascimento = ? WHERE id = ?",
+            (nome, telefone, email, data_nascimento, contato[0]),
         )
         conexao.commit()
-        print(f"Contato atualizado: {nome} - Telefone: {telefone} - Email: {email}")
+        print(
+            f"Contato atualizado: {nome} - Telefone: {telefone} - Email: {email} - Data de Nascimento: {data_nascimento}"
+        )
     else:
         print("Contato não encontrado.")
 
