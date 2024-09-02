@@ -146,8 +146,9 @@ def Listar_Contatos():
     if contatos:
         print("\nLista de Contatos:")
         for contato in contatos:
+            print(f"ID: {contato[0]} - Nome: {contato[1]}")
             print(
-                f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
+                f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}\n"
             )
     else:
         print("Nenhum contato cadastrado.")
@@ -164,7 +165,7 @@ def Buscar_Contato():
 
     if contato:
         print(
-            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}"
+            f"ID: {contato[0]} - Nome: {contato[1]} - Telefone: {contato[2]} - Email: {contato[3]} - Data de Nascimento: {contato[4]}\n"
         )
     else:
         print("Contato não encontrado.")
